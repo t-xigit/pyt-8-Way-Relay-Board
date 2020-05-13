@@ -175,7 +175,7 @@ def main():
     send_command(SET_SINGLE, BOARD_ADDRESS, 8)
     status = get_data(GET_PORT, BOARD_ADDRESS, 0)
     print(status)
-    set_realy(1,1)
+    set_realy(1, 1)
     ser.close()             # close port
 
 
