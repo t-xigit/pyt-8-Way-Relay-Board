@@ -5,14 +5,17 @@ Module Docstring
 
 import serial
 import time
+import logging
 
-__author__ = "Your Name"
+__author__ = "Timur Yigit"
 __version__ = "0.1.0"
 __license__ = "MIT"
 
 """ Data Frame """
 """ BYTE 0  - BYTE 1        - BYTE 2 - BYTE 3 """
 """ Command - Board address - Data   - Check sum XOR BYTE 1 BYTE 2 BYTE 3 """
+
+logging.basicConfig(level=logging.DEBUG)
 
 BOARD_ADDRESS = 1
 FRAME_SIZE = 4
@@ -75,7 +78,7 @@ TOGGLE = {
   "resp": 247
 }
 
-print("Opening Serial Port")
+logging.info("Opening Serial Port")
 ser = serial.Serial('/dev/ttyUSB0')  # open serial port
 ser.baudrate = 19200
 ser.timeout = 5
@@ -89,62 +92,71 @@ def get_crc(data):
     crc = 0
     for i in data:
         crc = crc ^ i
-    print("CRC: ", crc)
+    logging.debug("Calculated CRC: %d", crc)
     return crc
 
 def get_data_frame(command, address, data):
     return 0
 
+""" Checks if the return code and CRC are OK"""
+def check_response(command, response):
+    
+    resp = response[0:3]
+    rx_crc = response[CRC]
+    crc = get_crc(resp)
+
+    if rx_crc == crc:
+      logging.debug("Received CRC OK")
+    else:
+      raise RuntimeError("Received CRC wrong, received: %d, expected: %d", rx_crc, crc)
+
+    if response[CMD] == command["resp"]:
+        logging.debug("Response code OK")
+    else:
+        print("response: ", response)
+        raise RuntimeError("Response code wrong, received: %d, expected: %d", response[CMD], command["resp"])
+
 def send_command(command, address, data):
     
-    print(command, address, data)
+    logging.info("Sending: %s", command["name"])
     cmd = [command["cmd"], address, data]
     crc = get_crc(cmd)
     cmd.append(crc)
-    print("cmd: ", cmd)
     start_time = time.time()
     ser.write(cmd)     # write a string
     end_time = time.time()
-    print("Execution time send:", end_time-start_time)
+    logging.debug("Execution time send: %f", end_time-start_time)
     start_time = time.time()
     response = ser.read(FRAME_SIZE)
-    print("response: ", response)
-    if response[CMD] == command["resp"]:
-        print("cmd ok")
-    else:
-        print("response: ", response)
-        raise RuntimeError("Command Response wrong")
     end_time = time.time()
-    print("Execution time read:", end_time-start_time)
+    logging.debug("Execution time read: %f", end_time-start_time)
+    logging.debug("Received response: %s", response)
+    #This will cause an exeption if received package is wrong
+    check_response(command, response)
 
 def get_data(command, address, data):
+    logging.info("Getting data for: %s", command["name"])
     cmd = [command["cmd"], address, data]
     crc = get_crc(cmd)
     cmd.append(crc)
-    print("cmd: ", cmd)
     start_time = time.time()
     ser.write(cmd)     # write a string
     end_time = time.time()
-    print("Execution time send:", end_time-start_time)
+    logging.debug("Execution time send: %f", end_time-start_time)
     start_time = time.time()
+    # Before the Address is not set response is 8 bytes
     response = ser.read(FRAME_SIZE*2)
-    print("response: ", response)
-    if response[CMD] == command["resp"]:
-        print("cmd ok")
-    else:
-        print("response: ", response)
-        raise RuntimeError("Command Response wrong")
+    check_response(command, response)
     end_time = time.time()
-    print("Execution time read:", end_time-start_time)
+    logging.debug("Execution time read: %f", end_time-start_time)
     return response[DATA]
 
 def main():
     """ Main entry point of the app """
     fw_version = get_data(SETUP, BOARD_ADDRESS, BOARD_ADDRESS)
-    print("FW_Version: ", fw_version)
+    logging.info("FW_Version: %d", fw_version)
     send_command(SET_OPTION, BOARD_ADDRESS, 2)
     send_command(NOP, BOARD_ADDRESS, 0)
-    send_command(TOGGLE, BOARD_ADDRESS, 1)
     ser.close()             # close port
 
 if __name__ == "__main__":
