@@ -156,15 +156,16 @@ def get_data(command, address, data):
     logging.debug("Execution time read: %f", end_time - start_time)
     return response[DATA]
 
+
 @click.group()
 def cli():
-    """Just my help text"""
+    """Tool for controlling a serial relay box"""
     click.echo("Hello World")
 
 
-@cli.command("set-relay")
-@click.option('--relay','-r', type=int, help='Set number relay from 0 to 7')
-@click.option('--state','-s', type=int, help='0 for Off and 1 for On')
+@cli.command("set-relay", help="Set the status of a single relay")
+@click.option('--relay', '-r', type=int, help='Set number relay from 0 to 7')
+@click.option('--state', '-s', type=int, help='0 for Off and 1 for On')
 def set_relay(relay, state):
     if relay > 8:
         raise ValueError('Only relay 1 to 8 available')
@@ -173,6 +174,21 @@ def set_relay(relay, state):
         send_command(SET_SINGLE, BOARD_ADDRESS, bit)
     if state == 0:
         send_command(DEL_SINGLE, BOARD_ADDRESS, bit)
+
+
+@cli.command("set-all-off", help="Sets all relays to off")
+def set_all_off():
+    send_command(SET_PORT, BOARD_ADDRESS, 0)
+
+
+@cli.command("test-all", help="Tests all relays by tuning them on and off")
+def test_all():
+    send_command(SET_PORT, BOARD_ADDRESS, 0)
+    time.sleep(0.5)
+    for i in range(8):
+        send_command(SET_SINGLE, BOARD_ADDRESS, (1 << i))
+        time.sleep(0.3)
+        send_command(DEL_SINGLE, BOARD_ADDRESS, (1 << i))
 
 
 def main():
@@ -193,4 +209,4 @@ def main():
 if __name__ == "__main__":
     """ This is executed when run from the command line """
     cli()
-    #main()
+    # main()
