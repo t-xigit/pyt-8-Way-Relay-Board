@@ -6,6 +6,7 @@ Module Docstring
 import serial
 import time
 import logging
+import click
 
 __author__ = "Timur Yigit"
 __version__ = "0.1.0"
@@ -155,11 +156,19 @@ def get_data(command, address, data):
     logging.debug("Execution time read: %f", end_time - start_time)
     return response[DATA]
 
+@click.group()
+def cli():
+    """Just my help text"""
+    click.echo("Hello World")
 
-def set_realy(realy, state):
-    if realy > 8:
+
+@cli.command("set-relay")
+@click.option('--relay','-r', type=int, help='Set number relay from 0 to 7')
+@click.option('--state','-s', type=int, help='0 for Off and 1 for On')
+def set_relay(relay, state):
+    if relay > 8:
         raise ValueError('Only relay 1 to 8 available')
-    bit = 1 << realy
+    bit = 1 << relay
     if state == 1:
         send_command(SET_SINGLE, BOARD_ADDRESS, bit)
     if state == 0:
@@ -175,10 +184,13 @@ def main():
     send_command(SET_SINGLE, BOARD_ADDRESS, 8)
     status = get_data(GET_PORT, BOARD_ADDRESS, 0)
     print(status)
-    set_realy(1, 1)
+    set_relay(1, 1)
+    time.sleep(5)
+    set_relay(1, 0)
     ser.close()             # close port
 
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
-    main()
+    cli()
+    #main()
