@@ -199,21 +199,6 @@ def test_all():
         send_command(DEL_SINGLE, board_address, (1 << i))
 
 
-def main():
-    """ Main entry point of the app """
-    fw_version = get_data(SETUP, board_address, board_address)
-    logging.info("FW_Version: %d", fw_version)
-    send_command(SET_OPTION, board_address, 2)
-    send_command(NOP, board_address, 0)
-    send_command(SET_SINGLE, board_address, 8)
-    status = get_data(GET_PORT, board_address, 0)
-    print(status)
-    set_relay(1, 1)
-    time.sleep(5)
-    set_relay(1, 0)
-    ser.close()             # close port
-
-
 def set_brodcast_opt():
 
     logging.debug("Setting Broadcast Option to: %d", brdcast_opt)
