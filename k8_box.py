@@ -199,16 +199,18 @@ def test_all():
         send_command(DEL_SINGLE, board_address, (1 << i))
 
 
+'''
 def set_brodcast_opt():
 
     logging.debug("Setting Broadcast Option to: %d", brdcast_opt)
     send_command(SET_OPTION, board_address, brdcast_opt)
+'''
 
 
 def close_port(port):
     logging.debug("Closing serial port")
     port.close()
-    
+
 
 def open_port(port):
     logging.debug("Opening Serial Port")
@@ -230,12 +232,12 @@ def init_relay_box():
     logging.info("Initializing relay box with Address: %d", SET_BRD_ADDR)
     # Setup command initalizes the board the address, and returns FW Version
     fw_version = get_data(SETUP, SET_BRD_ADDR, SET_BRD_ADDR)
-    #logging.info("FW_Version: %d", fw_version)
-    brdcast_opt = get_data(GET_OPTION, SET_BRD_ADDR , SET_BRD_ADDR)
+    logging.debug("FW_Version: %d", fw_version)
+    brdcast_opt = get_data(GET_OPTION, SET_BRD_ADDR, SET_BRD_ADDR)
     logging.info("Broadcast Option: %d", brdcast_opt)
     brdcast_opt = 2
     logging.debug("Setting Broadcast Option to: %d", brdcast_opt)
-    #send_command(SET_OPTION, SET_BRD_ADDR, brdcast_opt)
+    # send_command(SET_OPTION, SET_BRD_ADDR, brdcast_opt)
     board_address = SET_BRD_ADDR
 
 
