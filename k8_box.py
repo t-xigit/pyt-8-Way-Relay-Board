@@ -233,7 +233,9 @@ def init_relay_box():
     # Setup command initalizes the board the address, and returns FW Version
     fw_version = get_data(SETUP, SET_BRD_ADDR, SET_BRD_ADDR)
     logging.debug("FW_Version: %d", fw_version)
-    brdcast_opt = get_data(GET_OPTION, SET_BRD_ADDR, SET_BRD_ADDR)
+    # BUG Get Brodcast option takes 5 sec need to fix this
+    # brdcast_opt = get_data(GET_OPTION, SET_BRD_ADDR, SET_BRD_ADDR)
+    brdcast_opt = 2
     logging.info("Broadcast Option: %d", brdcast_opt)
     brdcast_opt = 2
     logging.debug("Setting Broadcast Option to: %d", brdcast_opt)
