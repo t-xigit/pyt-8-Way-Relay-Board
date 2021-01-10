@@ -14,7 +14,7 @@ __version__ = "0.1.0"
 __license__ = "MIT"
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 
 # Parameters for the serial inteface
 BAUDRATE = 19200
